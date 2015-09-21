@@ -1,77 +1,26 @@
-var React = require('react');
-var ReactRouter = require('react-router');
-var Router = ReactRouter.Router;
-var Route = ReactRouter.Route;
-var Link = ReactRouter.Link;
-var RouteHandler =  ReactRouter.RouteHandler;
-var DefaultRoute = ReactRouter.DefaultRoute;
-var ViewAllMessages = require('./viewAllMessages');
-var TopBar = require('./topbar');
-var InputBox = require('./inputbox');
-var Firebase = require('firebase');
-var Home = require('./home');
-var Modal = require('react-modal'),
-    _ = require('underscore');
+var React = require('react'),
+    ReactRouter = require('react-router'),
+    Router = ReactRouter.Router,
+    Route = ReactRouter.Route,
+    Link = ReactRouter.Link,
+    RouteHandler =  ReactRouter.RouteHandler,
+    DefaultRoute = ReactRouter.DefaultRoute,
+   _ = require('underscore');
+
+var ViewAllMessages = require('./viewAllMessages'),
+    TopBar = require('./topbar'),
+    InputBox = require('./inputbox'),
+    Home = require('./home');
 
 
 var refreshTime = 2000;
 
-var ModModal = React.createClass({
-  getInitialState: function(){
-    return {
-      modalIsOn : this.props.modalIsOn
-    }
-  },
-
-  componentWillUpdate: function(nextProps, nextState){
-    nextState.modalIsOn = nextProps.modalIsOn;
-  },
-
-  render: function(){
-    return (
-      <Modal
-        isOpen={this.state.modalIsOn}
-        onRequestClose={this.closeModal}
-        style={this.styles} >
-
-        <h2>SIGN IN AS MODERATOR</h2>
-        <input value={this.state.email} type='text' placeholder='mod email'/><br/>
-        <input value={this.state.password} type='password' placeholder='mod password'/>
-        <button onClick={this.closeModal} style={{'float':'right'}}>sign in</button>
-      </Modal>
-    );   
-  },
-
-  styles : {
-    top                   : '50%',
-    left                  : '50%',
-    right                 : 'auto',
-    bottom                : 'auto',
-    position              : 'absolute',
-    transform             : 'translate(-50%, -50%)'
-  }
-});
-
-
 var App = React.createClass({
-  getInitialState: function(){
-    return {
-      modalIsOn : false
-    };
-  },
-
-  onModalChange: function(modalState){
-    console.log('in callback with modalstate', modalState);
-    this.setState({modalIsOn: modalState}, function(){console.log('insetstate')});
-    console.log('this is state ', this.state.modalIsOn)
-  },
-
   render: function(){
     return (
       <div>
-        <TopBar modalIsOn={this.state.modalIsOn} modalCallback={this.onModalChange}/>
+        <TopBar />
         <RouteHandler/>
-        <ModModal modalIsOn={this.state.modalIsOn}/>
       </div>
     );
   },
@@ -90,7 +39,9 @@ var mainView = React.createClass({
       moderator: '',
       roomname: '',
       favorites: [],
-      sortBy: window.localStorage['murmur.' + this.props.params.id + 'SORT'] || 'recent'
+      sortBy: window.localStorage['murmur.' + this.props.params.id + 'SORT'] || 'recent',
+      baseID: 0,
+      hairID: 0
     };
   },
 
@@ -118,7 +69,8 @@ var mainView = React.createClass({
   componentWillMount: function(){
     var id = this.state.id,
         context = this,
-        token = window.localStorage['murmur.' + id];
+        token = window.localStorage['murmur.' + id],
+        moderatorToken = window.localStorage['murmur.moderator'];
     console.log('sending ajax');
     $.ajax({
       type: 'POST',
@@ -128,12 +80,15 @@ var mainView = React.createClass({
         id: id,
         token: token
       }),
-      success: function(data){
-        console.log('server response:', data, data.success);
+      success: function (data) {
+        console.log('server response:', data);
         if (data.success) {
+          console.log('token: ', token);
           if (!token) {
             window.localStorage['murmur.' + id] = data.token;
             token = data.token;
+            console.log('in token: ', token);
+            console.log('local: ', window.localStorage['murmur.' + id])
           }
           console.log(token);
           console.log('Connected to Database');
@@ -143,7 +98,9 @@ var mainView = React.createClass({
             uid: data.uid,
             moderator: data.roomData.email,
             roomname: data.roomData.name,
-            favorites: data.favorites
+            favorites: data.favorites,
+            baseID: data.baseID,
+            hairID: data.hairID
           })
         } else {
           console.log('room does not exist');
@@ -152,26 +109,46 @@ var mainView = React.createClass({
       }
     });
   },
+
+  componentDidMount: function() {
+    var id = this.state.id,
+            context = this,
+            token = window.localStorage['murmur.' + id];
+    // context.checkForUpdates(id, token, context);
+    setInterval(function() {
+            context.checkForUpdates(id, token, context)}, refreshTime);
+  },
+
+  checkForUpdates: function(id, token, context) {
+    // console.log('checking');
+    $.ajax({
+      type: 'POST',
+      url: '/checkroom',
+      contentType: 'application/json',
+      data: JSON.stringify({
+        id: id,
+        token: token
+      }),
+      success: function(data) {
+        // console.log('checking complete');
+        context.setState({
+          messages: data.messages,
+        })
+      }
+    })
+  },
     
   handleSortRecent: function(){
-    window.localStorage['murmur.' + this.props.params.id + 'SORT'] = 'recent';
-    window.location.reload();
-    // this.setState({ sortBy: 'recent' })
+    this.setState({ sortBy: 'recent' });
   },
   handleSortPopular: function(){
-    window.localStorage['murmur.' + this.props.params.id + 'SORT'] = 'popular';
-    window.location.reload();
-    // this.setState({ sortBy: 'popular' })
+    this.setState({ sortBy: 'popular' });
   },
   handleFavorites: function(){
-    window.localStorage['murmur.' + this.props.params.id + 'SORT'] = 'favorite';
-    window.location.reload();
-    // this.setState({ sortBy: 'favorite' });
+    this.setState({ sortBy: 'favorite' });
   },
   handleMyPosts: function(){
-    window.localStorage['murmur.' + this.props.params.id + 'SORT'] = 'mine';
-    window.location.reload();
-    // this.setState({ sortBy: 'mine' });
+    this.setState({ sortBy: 'mine' });
   },
   toggleInputBox: function(){
     this.setState({ input: !this.state.input })
@@ -189,7 +166,7 @@ var mainView = React.createClass({
             </div>
             <InputBox id={this.state.id} messages={this.state.messages} update={this.updateMessages}  />
           </div>
-          <ViewAllMessages sortBy={this.state.sortBy} messages={this.state.messages} id={this.state.id} favorites={this.state.favorites} updateFavorites={this.updateFavorites} updateMessages={this.updateMessages} />
+          <ViewAllMessages user={this.state.uid} sortBy={this.state.sortBy} baseID={this.state.baseID} hairID={this.state.hairID} messages={this.state.messages} id={this.state.id} favorites={this.state.favorites} updateFavorites={this.updateFavorites} updateMessages={this.updateMessages} />
         </div>
       </div>
     )

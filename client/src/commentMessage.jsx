@@ -8,64 +8,56 @@ module.exports = React.createClass({
   getInitialState: function() {
     return {
       commentBox: 'false',
+      votes: this.props.votes
     }
   },
-  upVote: function(event){
+ // Post upvote data to Server
+  upVote: function () {
+    this.vote(1);
+  },
 
+  // Post downvote data to Server
+  downVote: function () {
+    this.vote(-1);
+  },
+
+  vote: function (alter) {
     $.ajax({
       type: 'POST',
-      url: 'voteComment' ,
+      url: '/vote' ,
       contentType: 'application/json',
       data: JSON.stringify({
-        "roomname": this.props.roomname,
-        "messageId": this.props.messageId,
-        "commentId": this.props.commentId,
-        "vote": true,
-        "token": this.props.token,
-      }),
-      success: function(){
-      }
-    })
+        messageID: this.props.messageID,
+        alter: alter
+      })
+    });
+    var votes = this.props.votes;
+    this.props.votes = votes + alter;
+    this.setState({ votes: this.props.votes });
   },
-  downVote: function(event){
 
-    $.ajax({
-      type: 'POST',
-      url: 'voteComment' ,
-      contentType: 'application/json',
-      data: JSON.stringify({
-        "roomname": this.props.id,
-        "messageId": this.props.messageId,
-        "commentId": this.props.commentId,
-        "vote": false,
-        "token": this.props.token,
-      }),
-      success: function(){
-      }
-    })
-  },
   render: function() {
     return (
-      <div id={ this.props.commentId } key={ this.props.commentId }>
+      <div id={this.props.messageID} key={this.props.messageID}>
         <div className="conatiner" style={{float: 'left', clear: 'both', marginBottom: '5px'}}>
-          <div style={ this.styles.commentContainer }>
+          <div style={this.styles.commentContainer}>
             <span style={{float: "left"}}>
-              <Face baseId={ this.props.baseId } hairId={ this.props.hairId } key={ this.props.commentID }/>
+              <Face author={this.props.author} key={this.props.messageID}/>
             </span>
             <span style={{float: "left"}}>
               <p style={{fontFamily: 'Alegreya', color: 'black', fontSize: '1em'}}>
-                { this.props.message }
+                {this.props.message}
               </p>
-              <span style={{fontFamily: 'Alegreya', fontStyle: "italic", fontSize: '.8em', float: "left"}}>
-                ({ moment(this.props.timestamp).fromNow() })
+              <span style={{fontFamily: 'Alegreya', fontStyle: 'italic', fontSize: '.8em', float: "left"}}>
+                ({moment(this.props.timestamp).fromNow()})
               </span>
             </span>
           </div>
         </div>
-        <div style={ this.styles.voteContainer }>
-          <i className="glyphicon glyphicon-chevron-up" style={{color: "#0000FF"}} onClick={ this.upVote }></i>
-            <span className="count"  style={ this.styles.voteCount }> { this.props.votes } </span>
-          <i className="glyphicon glyphicon-chevron-down" style={{color: "#0000FF"}} onClick={ this.downVote }></i>
+        <div style={this.styles.voteContainer}>
+          <i className="glyphicon glyphicon-chevron-up" style={{color: "#0000FF"}} onClick={this.upVote}></i>
+            <span className="count"  style={this.styles.voteCount}> {this.props.votes} </span>
+          <i className="glyphicon glyphicon-chevron-down" style={{color: "#0000FF"}} onClick={this.downVote}></i>
         </div>
       </div>
     )

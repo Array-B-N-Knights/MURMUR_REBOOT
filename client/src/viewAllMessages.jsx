@@ -5,22 +5,26 @@ var React   = require('react'),
 var ViewAllMessages = React.createClass({
   render: function() {
         messageRows = [];
-    console.log(this.props.messages);
+    // console.log(this.props.messages);
     for (var i = 0; i < this.props.messages.length; i++) {
       var message = this.props.messages[i];
       if (message.parent === 'main') {
+        var favorite;
+        favorite = _.contains(this.props.favorites, message._id) ? true : false;
         var commentRows = [];
         messageRows.push(
           <Message
             id={this.props.id}
             favorites={this.props.favorites}
-            auth={message.uid}
+            author={message.uid}
             user={this.props.user}
             message={message.text}
-            comments={message.comments}
             votes={message.votes}
-            messageID={message.id}
+            favorite={favorite}
+            messageID={message._id}
             messages={this.props.messages}
+            hairID={this.props.hairID}
+            baseID={this.props.baseID}
             updateMessages={this.props.updateMessages}
             updateFavorites={this.props.updateFavorites}
             timestamp={message.timestamp} />
@@ -42,8 +46,8 @@ var ViewAllMessages = React.createClass({
       }),
 
       'mine': _.filter(messageRows.slice(), function (item) {
-        if (item.props.user === item.props.auth) {
-          return true
+        if (item.props.user === item.props.author) {
+          return true;
         }
       }).sort(function (a, b) {
         return new Date(b.props.timestamp) - new Date(a.props.timestamp);
