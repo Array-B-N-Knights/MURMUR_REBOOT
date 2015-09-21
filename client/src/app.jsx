@@ -39,7 +39,7 @@ var mainView = React.createClass({
       moderator: '',
       roomname: '',
       favorites: [],
-      sortBy: window.localStorage['murmur.' + this.props.params.id + 'SORT'] || 'recent',
+      sortBy: 'recent',
       baseID: 0,
       hairID: 0
     };
@@ -138,30 +138,20 @@ var mainView = React.createClass({
     })
   },
     
-  handleSortRecent: function(){
-    // window.localStorage['murmur.' + this.props.params.id + 'SORT'] = 'recent';
-    // window.location.reload();
+  handleSortRecent: function () {
     this.setState({ sortBy: 'recent' })
-    this.forceUpdate();
   },
-  handleSortPopular: function(){
-    window.localStorage['murmur.' + this.props.params.id + 'SORT'] = 'popular';
-    window.location.reload();
-    // this.setState({ sortBy: 'popular' })
+  handleSortPopular: function () {
+    this.setState({ sortBy: 'popular' });
   },
-  handleFavorites: function(){
-    // window.localStorage['murmur.' + this.props.params.id + 'SORT'] = 'favorite';
-    // window.location.reload();
+  handleFavorites: function () {
     this.setState({ sortBy: 'favorite' });
-    this.forceUpdate();
   },
-  handleMyPosts: function(){
-    window.localStorage['murmur.' + this.props.params.id + 'SORT'] = 'mine';
-    window.location.reload();
-    // this.setState({ sortBy: 'mine' });
+  handleMyPosts: function () {
+    this.setState({ sortBy: 'mine' });
   },
-  toggleInputBox: function(){
-    this.setState({ input: !this.state.input })
+  toggleInputBox: function () {
+    this.setState({ input: !this.state.input });
   },
   render: function(){
     return (
