@@ -139,17 +139,13 @@ var mainView = React.createClass({
   },
     
   handleSortRecent: function(){
-    window.localStorage['murmur.' + this.props.params.id + 'SORT'] = 'recent';
-    window.location.reload();
-    // this.setState({ sortBy: 'recent' })
+    this.setState({ sortBy: 'recent' });
   },
   handleSortPopular: function(){
     this.setState({ sortBy: 'popular' });
   },
   handleFavorites: function(){
-    window.localStorage['murmur.' + this.props.params.id + 'SORT'] = 'favorite';
-    window.location.reload();
-    // this.setState({ sortBy: 'favorite' });
+    this.setState({ sortBy: 'favorite' });
   },
   handleMyPosts: function(){
     this.setState({ sortBy: 'mine' });
