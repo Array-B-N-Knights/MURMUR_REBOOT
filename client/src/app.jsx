@@ -36,12 +36,10 @@ var mainView = React.createClass({
       sort: 'recent',
       id: this.props.params.id,
       uid: '',
-      moderator: '',
+      moderator: false,
       roomname: '',
       favorites: [],
-      sortBy: window.localStorage['murmur.' + this.props.params.id + 'SORT'] || 'recent',
-      baseID: 0,
-      hairID: 0,
+      sortBy: 'recent'
     };
   },
 
@@ -66,48 +64,73 @@ var mainView = React.createClass({
     })
   },
 
-  componentWillMount: function(){
-    var id = this.state.id,
-        context = this,
-        token = window.localStorage['murmur.' + id],
-        moderatorToken = window.localStorage['murmur.moderator'];
-    console.log('sending ajax');
+  checkUser: function (context, id, token, moderatorOption) {
     $.ajax({
-      type: 'POST',
-      url: '/checkroom',
-      contentType: 'application/json',
-      data: JSON.stringify({
-        id: id,
-        token: token
-      }),
-      success: function (data) {
-        console.log('server response:', data);
-        if (data.success) {
-          console.log('token: ', token);
-          if (!token) {
-            window.localStorage['murmur.' + id] = data.token;
-            token = data.token;
-            console.log('in token: ', token);
-            console.log('local: ', window.localStorage['murmur.' + id])
-          }
-          console.log(token);
-          console.log('Connected to Database');
-          context.setState({
-            messages: data.messages,
-            id: id,
-            uid: data.uid,
-            moderator: data.roomData.email,
-            roomname: data.roomData.name,
-            favorites: data.favorites,
-            baseID: data.baseID,
-            hairID: data.hairID
-          })
-        } else {
-          console.log('room does not exist');
-          context.transitionTo('index');
-        }    
-      }
-    });
+        type: 'POST',
+        url: '/checkroom',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          id: id,
+          token: token
+        }),
+        success: function (data) {
+          console.log('server response:', data);
+          if (data.success) {
+            console.log('token: ', token);
+            if (!token) {
+              window.localStorage['murmur.' + id] = data.token;
+              token = data.token;
+              console.log('in token: ', token);
+              console.log('local: ', window.localStorage['murmur.' + id])
+            }
+            console.log(token);
+            console.log('Connected to Database');
+            context.setState({
+              messages: data.messages,
+              id: id,
+              uid: data.uid,
+              roomname: data.roomData.name,
+              favorites: data.favorites
+            })
+            if (moderatorOption) {
+              context.setState({
+                uid: 'mod',
+                moderator: true
+              })
+            }
+          } else {
+            console.log('room does not exist');
+            context.transitionTo('index');
+          }    
+        }
+      });
+    console.log(this.state)
+  },
+
+  componentWillMount: function () {
+    var id = this.state.id;
+    var token = window.localStorage['murmur.' + this.state.id],
+        moderatorToken = window.localStorage['murmur.mod.' + this.state.id],
+        context = this;
+    console.log('sending ajax');
+
+    if (moderatorToken) {
+      $.ajax({
+        type: 'POST',
+        url: '/checkModerator',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          token: moderatorToken,
+          id: id
+        }),
+        success: function (data) {
+          console.log('in here')
+          context.checkUser(context, id, token, true);
+        }
+      })
+    } else {
+      this.checkUser(this, id, token);
+    }
   },
 
   componentDidMount: function() {
@@ -158,18 +181,15 @@ var mainView = React.createClass({
       <div>
         <div>
           <div style={this.styles.filter}>
-          <div> 
-            <p style={{'fontFamily': 'Sans-serif', 'font-size' : '300%', 'color': 'black', 'margin': 'auto' }}> {this.state.roomname} </p>
-          </div>
-            <div className="btn-group" style={{display: 'inline-block', marginTop: '20px'}}>
+            <div className="btn-group" style={{display: 'inline-block'}}>
               <button className="btn btn-default" style={{fontFamily: 'Roboto'}} onClick={this.handleSortRecent}> New </button>
               <button className="btn btn-default" style={{fontFamily: 'Roboto'}} onClick={this.handleSortPopular}> Hot </button>
               <button className="btn btn-default" style={{fontFamily: 'Roboto'}} onClick={this.handleFavorites}>Favorites</button>
               <button className="btn btn-default" style={{fontFamily: 'Roboto'}} onClick={this.handleMyPosts}>My Posts</button>
             </div>
-            <InputBox id={this.state.id} messages={this.state.messages} update={this.updateMessages}  />
+            <InputBox id={this.state.id} messages={this.state.messages} update={this.updateMessages} user={this.state.uid} />
           </div>
-          <ViewAllMessages user={this.state.uid} sortBy={this.state.sortBy} baseID={this.state.baseID} hairID={this.state.hairID} messages={this.state.messages} id={this.state.id} favorites={this.state.favorites} updateFavorites={this.updateFavorites} updateMessages={this.updateMessages} />
+          <ViewAllMessages mod={this.state.moderator} user={this.state.uid} sortBy={this.state.sortBy} baseID={this.state.baseID} hairID={this.state.hairID} messages={this.state.messages} id={this.state.id} favorites={this.state.favorites} updateFavorites={this.updateFavorites} updateMessages={this.updateMessages} />
         </div>
       </div>
     )
