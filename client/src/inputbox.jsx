@@ -25,7 +25,7 @@ var InputBox = React.createClass({
 
   // Post a message when "Submit" button is clicked
   handleClick: function(event){
-    console.log('uid:', this.props.uid)
+    console.log('uid:', this.props.user)
     var context = this;
     event.preventDefault();
     $.ajax({ // Post message
@@ -34,7 +34,7 @@ var InputBox = React.createClass({
       contentType: 'application/json',
       data: JSON.stringify({
         message: this.state.message,
-        token: window.localStorage['murmur.' + this.props.id],
+        author: this.props.user,
         id: this.props.id,
         parent: 'main' 
       }),

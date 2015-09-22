@@ -31,9 +31,9 @@ var controllers = {
           res.json({ signedIn: false });
           console.log('* * * moderator not found')
         } else {
-          // console.log(email, password, user)
+          console.log(email, password, user)
           if (password === user.password) {
-            var token = jwt.encode({ password: password }, 'donkey');
+            var token = jwt.encode({ email: email, password: password }, 'donkey');
             findRooms({ email: email })
               .then(function (rooms) {
                 rooms = _.map(rooms, function (room) {
@@ -52,7 +52,7 @@ var controllers = {
   verify: function(req, res){
     var email  = req.body.email,
         password  = req.body.password;
-    console.log('verify is ran','email pass :', email, password);
+    console.log('verify is running');
 
     var url = jwt.encode({
       email: email,
@@ -72,8 +72,14 @@ var controllers = {
       })
   },
 
+  remove: function (req, res) {
+    var id = req.body.id;
+    Message.findByIdAndUpdate(id , { $set: { text: 'this message has been removed by the moderator' } }, function() {
+      res.sendStatus(200);
+    });
+  },
+
   signup: function (req, res) {
-    console.log('path test:', req.url.path,'url to be decoded:', req.url.slice(3));
     var moderator = jwt.decode(req.url.slice(3), 'donkey');
 
     console.log('moderator data recieved: ', moderator);
@@ -93,7 +99,6 @@ var controllers = {
             };
             console.log('creating new moderator * * * : ', newUser);
             Moderator.create(newUser);
-            res.redirect('/');
         }
       })
   },
@@ -173,11 +178,26 @@ var controllers = {
       })
   },
 
+  checkModerator: function (req, res) {
+    var moderator = jwt.decode(req.body.token, 'donkey'),
+        id = req.body.id;
+    console.log('moderator data * * * : ', moderator);
+    findModerator({
+      email: moderator.email,
+      password: moderator.password
+    })
+      .then(function (user) {
+        if (user) {
+          res.sendStatus(200);
+        }
+      })
+  },
+
   addMessage: function (req, res) {
     var id = req.body.id,
         message = req.body.message,
         parent = req.body.parent,
-        uid = jwt.decode(req.body.token, 'donkey').id;
+        uid = req.body.author;
     var messageID = createRandomID(5);
     var newMessage = {
       timestamp: new Date(),
@@ -191,6 +211,7 @@ var controllers = {
     createMessage(newMessage)
       .then(function (message) {
         if (message) {
+          console.log('message added * * * : ', message);
           res.json({ success: true, message: message });
         } else {
           res.json({ success: false });

@@ -12,6 +12,7 @@ var Rooms = React.createClass({
       links.push(
         < Room
           name={room.name}
+          token={this.props.token}
           goTo={this.props.goTo}
           id={room.id} />
         )
