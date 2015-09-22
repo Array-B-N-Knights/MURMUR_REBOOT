@@ -11,7 +11,7 @@ var Room = React.createClass({
 
   render: function () {
     return (
-      <div className="linksBox" >
+      <div style={{marginLeft: "20px", fontSize:"26px"}} className="linksBox" >
         <a onClick={this.handleClick} >{ this.props.name }</a>
       </div>
     )

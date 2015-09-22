@@ -14,7 +14,7 @@ var Home = React.createClass({
       email: '',
       password: '',
       url: 'signin',
-      button: 'create an account',
+      button: 'Create an Account',
       emailStore: '',
       verificationSent: false,
       rooms: [],
@@ -81,7 +81,7 @@ var Home = React.createClass({
     return (
       <div>
         <div className="input-group" style = {{padding: '15px', marginTop: '100px'}}>
-          <h1>create a room</h1>
+          <h1>Create a Room</h1>
           <input value={this.state.roomname} onChange={this.handleRoomnameTextChange} onKeyDown={this.enterPressed} type="text" className="form-control"  placeholder="Enter your room's name" />
           <span className="input-group-btn" >
             <button onClick={this.submitRoom} className="btn btn-success" type="button"> Submit </button>
@@ -112,7 +112,7 @@ var Home = React.createClass({
           context.setState({
             verificationSent: true,
             url: 'signin',
-            button: 'create an account'
+            button: 'Create an Account'
           })
         }
       }
@@ -124,12 +124,12 @@ var Home = React.createClass({
     event.preventDefault();
     if(this.state.url==="signin") {
       this.setState({
-        button: "already have an account?",
+        button: "Already Have An Account?",
         url: "signup"
       });
     } else {
       this.setState({
-        button: "create an account",
+        button: "Create an Account",
         url: "signin"
       });
     }
@@ -141,13 +141,12 @@ var Home = React.createClass({
         <h1>{this.state.url}</h1>
         { this.state.verificationSent ? <p>We sent you an e-mail. Go and click on the link to verify.</p> : null }
         <input value={this.state.email} onChange={this.handleEmailTextChange} onKeyDown={this.enterPressed} type="text" className="form-control"  placeholder="Enter e-mail address" />
-        <input value={this.state.password} onChange={this.handlePasswordTextChange} onKeyDown={this.enterPressed} type="password" className="form-control"  placeholder="Enter password" />
-        <span className="input-group-btn">
+        <input style={{marginTop: "10px" }} value={this.state.password} onChange={this.handlePasswordTextChange} onKeyDown={this.enterPressed} type="password" className="form-control"  placeholder="Enter password" />
+        <div style={{color:"white"}}> t</div>
+        <div className="input-group-btn" style={{display: "block"}}>
           <button onClick={this.submitAuth} className="btn btn-success" type="button"> Submit </button>
-        </span>
-        <span className="input-group-btn">
           <input type="button" onClick={this.toggleAuth} className="btn btn-success" value={this.state.button} />
-        </span>        
+        </div>   
       </div>
     )
   },
