@@ -17,7 +17,8 @@ var Home = React.createClass({
       button: 'create an account',
       emailStore: '',
       verificationSent: false,
-      rooms: []
+      rooms: [],
+      token: ''
     };
   },
 
@@ -86,7 +87,7 @@ var Home = React.createClass({
             <button onClick={this.submitRoom} className="btn btn-success" type="button"> Submit </button>
           </span>      
         </div>
-        <Rooms rooms={this.state.rooms} goTo={this.goToRoom}/>
+        <Rooms rooms={this.state.rooms} goTo={this.goToRoom} token={this.state.token} />
       </div>
     )
   },
@@ -98,14 +99,14 @@ var Home = React.createClass({
       type: 'POST',
       url: '/' + this.state.url,
       contentType: 'application/json',
-      data: JSON.stringify({ "email": this.state.email, "password": this.state.password }),
+      data: JSON.stringify({ email: this.state.email, password: this.state.password }),
       success: function (data){
         if (data.signedIn) {
-          window.localStorage['murmur.moderator'] = data.token;
           context.setState({
             loggedIn: true,
             emailStore: context.state.email,
-            rooms: data.rooms
+            rooms: data.rooms,
+            token: data.token
           })
         } else if (data.emailSent) {
           context.setState({

@@ -8,12 +8,12 @@ module.exports = React.createClass({
   getInitialState: function() {
     return {
       commentBox: 'false',
-      votes: this.props.votes
+      votes: this.props.votes,
+      message: this.props.message
     }
   },
  // Post upvote data to Server
   upVote: function () {
-    console.log('up')
     this.vote(1);
   },
 
@@ -32,9 +32,21 @@ module.exports = React.createClass({
         alter: alter
       })
     });
-    var votes = this.state.votes;
-    console.log(votes)
-    this.setState({ votes: votes + alter });
+    var votes = this.props.votes;
+    this.props.votes = votes + alter;
+    this.setState({ votes: this.props.votes });
+  },
+
+  remove: function () {
+    if (this.props.user==='mod') {
+      $.ajax({
+        type: 'POST',
+        url: '/remove',
+        contentType: 'application/json',
+        data: JSON.stringify({ id: this.props.messageID })
+      });
+      this.setState({ message: 'this message has been removed by the moderator' });
+    }
   },
 
   render: function() {
@@ -46,8 +58,8 @@ module.exports = React.createClass({
               <Face author={this.props.author} key={this.props.messageID}/>
             </span>
             <span style={{float: "left"}}>
-              <p style={{fontFamily: 'Alegreya', color: 'black', fontSize: '1em'}}>
-                {this.props.message}
+              <p style={{fontFamily: 'Alegreya', color: 'black', fontSize: '1em'}} onClick={this.remove} >
+                {this.state.message}
               </p>
               <span style={{fontFamily: 'Alegreya', fontStyle: 'italic', fontSize: '.8em', float: "left"}}>
                 ({moment(this.props.timestamp).fromNow()})
@@ -57,7 +69,7 @@ module.exports = React.createClass({
         </div>
         <div style={this.styles.voteContainer}>
           <i className="glyphicon glyphicon-chevron-up" style={{color: "#0000FF"}} onClick={this.upVote}></i>
-            <span className="count"  style={this.styles.voteCount}> {this.state.votes} </span>
+            <span className="count"  style={this.styles.voteCount}> {this.props.votes} </span>
           <i className="glyphicon glyphicon-chevron-down" style={{color: "#0000FF"}} onClick={this.downVote}></i>
         </div>
       </div>

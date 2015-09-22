@@ -28,7 +28,7 @@ var commentBox = React.createClass({
         id: this.props.id,
         message: this.state.comment,
         parent: this.props.messageID,
-        token: window.localStorage['murmur.' + this.props.id],
+        author: this.props.user,
       }),
       success: function(data){
         console.log('server response * * * : ', data);

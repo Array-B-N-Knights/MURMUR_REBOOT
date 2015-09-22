@@ -5,13 +5,13 @@ var React = require('react'),
 var Room = React.createClass({
 
   handleClick: function () {
+    window.localStorage['murmur.mod.' + this.props.id] = this.props.token;
     this.props.goTo(this.props.id);
-    console.log(this.props.id);
   },
 
   render: function () {
     return (
-      <div>
+      <div className="linksBox" >
         <a onClick={this.handleClick} >{ this.props.name }</a>
       </div>
     )
